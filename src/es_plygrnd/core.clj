@@ -183,28 +183,13 @@
 
 (esi/delete conn index)
 ;V5
-(http/with-middleware
-  patch/middleware
-  (esi/create conn index
-              :settings {:index {"analysis" {"analyzer"
-                                              {"my_analyzer"
-                                                {"alias"     "my_analyzer1"
-                                                 "type"      "custom"
-                                                 "tokenizer" "standard"
-                                                 "filter"    ["standard", "lowercase", "stop", "word_delimiter"]
-                                                 "stopwords" ["in"]}}
 
-                                            }}}
-              :mappings {"syslog" {:properties
-                                    {
-                                      :ip     {:type "ip"}
-                                      :reason {:type "string"}
-                                      :msg    {:type   "multi_field"
-                                               :fields {:orjmsg {:type "string"}
-                                                        :modmsg {:type "string" :analyzer "my_analyzer"}}
-                                              }
-                                    }}}))
 
+;TODO
+;custom filter and tokenizers and concepts
+;caching samples
+;facet->aggregation, subdocument aggregations
+;
 
 
 
