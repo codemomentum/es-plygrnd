@@ -1,10 +1,10 @@
 # es-plygrnd
 
-A Clojure library designed to ... well, that part is up to you.
+Elastisch and Elasticsearch Samples, Intro, Playground
 
 ## Usage
 
-FIXME
+use the repl
 
 ## License
 
