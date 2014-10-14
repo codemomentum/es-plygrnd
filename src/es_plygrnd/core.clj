@@ -189,7 +189,7 @@
 ;custom filter and tokenizers and concepts
 ;caching samples
 ;facet->aggregation, subdocument aggregations
-;
+;suggest
 
 
 
