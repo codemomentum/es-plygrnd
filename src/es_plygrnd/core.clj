@@ -183,6 +183,33 @@
 
 (esi/delete conn index)
 ;V5
+;ascii folding filter
+(http/with-middleware
+  patch/middleware
+  (esi/create conn index
+              :settings {:index {"analysis" {"analyzer"
+                                              {"my_analyzer"
+                                                {"alias"     "my_analyzer1"
+                                                 "type"      "custom"
+                                                 "tokenizer" "standard"
+                                                 "filter"    ["standard", "lowercase", "stop", "word_delimiter", "asciifolding"]
+                                                 "stopwords" ["in"]}}
+
+                                            }}}
+              :mappings {"syslog" {:properties
+                                    {
+                                      :ip     {:type "ip"}
+                                      :reason {:type "string"}
+                                      :msg    {:type   "multi_field"
+                                               :fields {:orjmsg {:type "string"}
+                                                        :modmsg {:type "string" :analyzer "my_analyzer"}}
+                                              }
+                                    }}}))
+
+(pp/pprint (esd/create conn index itype mydoc))
+(qp conn index itype (q/term :modmsg "illidan"))
+(pp/pprint (esd/analyze conn (:msg mydoc) :tokenizer "standard" :token_filters ["word_delimiter" "asciifolding"]))
+
 
 
 ;TODO
