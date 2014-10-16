@@ -4,6 +4,7 @@
             [clojurewerkz.elastisch.rest.index :as esi]
             [clojurewerkz.elastisch.rest.document :as esd]
             [clojurewerkz.elastisch.query :as q]
+            [clojurewerkz.elastisch.aggregation :as a]
             [clojurewerkz.elastisch.rest.response :as esrsp]
             [clojure.pprint :as pp]
             [es-plygrnd.patch :as patch]))
@@ -217,6 +218,39 @@
 ;caching samples
 ;facet->aggregation, subdocument aggregations
 ;suggest
+
+
+
+
+(esi/delete conn "logstash-2014.10.15")
+(http/with-middleware
+  patch/middleware
+  (esi/create conn "logstash-2014.10.15"
+              :settings {:index {"analysis" {"analyzer"
+                                              {"default" {"type" "keyword"}}}}}))
+
+(pp/pprint (esi/get-mapping conn "logstash-2014.10.15" "v1-health"))
+(pp/pprint (esi/get-settings conn))
+
+(defn qpa
+  ;query and print
+  [c i t q]
+  (http/with-middleware patch/middleware
+                        (let [res (esd/search c i t q)
+                              n (esrsp/total-hits res)
+                              hits (esrsp/hits-from res)]
+                          (println (format "Total hits: %d" n))
+                          (pp/pprint (esrsp/aggregations-from res)))))
+
+(qpa conn "logstash-2014.10.15" "v1-health" {:query        (q/match-all)
+                                             :aggregations {:number_of_nodes (a/avg "number_of_nodes")}})
+
+(qpa conn "logstash-2014.10.15" "v1-stats" {:query        (q/match-all)
+                                            :aggregations {:http-conn-per-cluster (a/avg "current_open")}})
+
+(qpa conn "logstash-2014.10.15" "v1-stats" {:query        (q/match-all)
+                                            :aggregations {:hosts                 (a/terms "host")
+                                                           :http-conn-per-cluster (a/terms "current_open")}})
 
 
 
